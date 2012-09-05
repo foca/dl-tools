@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -e
+[ -n "$DEBUG" ] && set -x
+
+directory="$(echo "${1:-"$HOME/Downloads"}" | sed -e 's/\\//g')"
+
+while read url name; do
+  default_name="$(basename "$url" | cut -d? -f1)"
+  name="${name:-$default_name}"
+  (axel -q -o "$directory/$name" "$url") &
+done
