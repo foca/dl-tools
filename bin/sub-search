@@ -1,0 +1,111 @@
+#!/usr/bin/env ruby
+
+require "xmlrpc/client"
+require "stringio"
+
+begin
+  stderr, $stderr = $stderr, StringIO.new
+
+  class XMLRPC::Client
+    USER_AGENT = "Subdownloader 1.2.4"
+
+    def do_rpc(request, async=false)
+      header = {
+        "User-Agent"     =>  USER_AGENT,
+        "Content-Type"   => "text/xml; charset=utf-8",
+        "Content-Length" => request.bytesize.to_s,
+        "Connection"     => (async ? "close" : "keep-alive")
+      }
+
+      header["Cookie"] = @cookie        if @cookie
+      header.update(@http_header_extra) if @http_header_extra
+
+      if @auth != nil
+        # add authorization header
+        header["Authorization"] = @auth
+      end
+
+      resp = nil
+      @http_last_response = nil
+
+      # reuse the HTTP object for each call => connection alive is possible
+      # we must start connection explicitly first time so that http.request
+      # does not assume that we don't want keepalive
+      @http.start if not @http.started?
+
+      # post request
+      resp = @http.request_post(@path, request, header)
+
+      @http_last_response = resp
+
+      data = resp.body
+
+      if resp.code == "401"
+        # Authorization Required
+        raise "Authorization failed.\nHTTP-Error: #{resp.code} #{resp.message}"
+      elsif resp.code[0,1] != "2"
+        raise "HTTP-Error: #{resp.code} #{resp.message}"
+      end
+
+      parse_set_cookies(resp.get_fields("Set-Cookie"))
+
+      return data
+    end
+  end
+ensure
+  $stderr = stderr
+end
+
+module MovieHasher
+  CHUNK_SIZE = 64 * 1024 # in bytes
+
+  def self.compute_hash(io)
+    io.rewind
+
+    size = io.size
+    hash = size
+
+    io.read(CHUNK_SIZE).unpack("Q*").each do |n|
+      hash = hash + n & 0xffffffffffffffff
+    end
+
+    io.seek([0, size - CHUNK_SIZE].max, IO::SEEK_SET)
+
+    # And again for the end of the file
+    io.read(CHUNK_SIZE).unpack("Q*").each do |n|
+      hash = hash + n & 0xffffffffffffffff
+    end
+
+    sprintf("%016x", hash)
+  end
+end
+
+begin
+  server = XMLRPC::Client.new("api.opensubtitles.org", "/xml-rpc", 80)
+  login = server.call("LogIn", "", "", "en", XMLRPC::Client::USER_AGENT)
+
+  movies = ARGV.map do |path|
+    File.open(path, "rb") do |file|
+      {
+        "moviehash" => MovieHasher.compute_hash(file),
+        "moviebytesize" => file.size,
+        "sublanguageid" => "eng",
+      }
+    end
+  end
+
+  results = server.call(
+    "SearchSubtitles",
+    login.fetch("token"),
+    movies
+  ).fetch("data")
+
+  results = ARGV.zip(results).map do |filename, result|
+    filename = File.basename(filename).sub(/\.\w+$/, ".srt.gz")
+    [result.fetch("SubDownloadLink"), filename].join(" ")
+  end
+
+  puts results
+rescue => err
+  $stderr.puts err
+end
