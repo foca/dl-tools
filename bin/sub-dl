@@ -8,5 +8,6 @@ directory="$(echo "${1:-"$HOME/Downloads"}" | sed -e 's/\\//g')"
 while read url name; do
   default_name="$(basename "$url" | cut -d? -f1)"
   name="${name:-$default_name}"
-  (axel -q -o "$directory/$name" "$url") &
+  name="${name%.gz}"
+  curl "$url" 2>/dev/null | gunzip > "$directory/$name"
 done
