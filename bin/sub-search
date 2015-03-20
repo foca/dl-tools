@@ -158,7 +158,18 @@ module MovieHasher
   end
 end
 
+require "optparse"
+
 begin
+  options = { lang: "eng" }
+
+  OptionParser.new do |opts|
+    opts.banner = "Usage: #{File.basename($0)} [options] <video> <video> ..."
+    opts.on("-l", "--lang", "Choose language (Defaults to 'eng')") do |val|
+      options[:lang] = val
+    end
+  end.parse!
+
   server = XMLRPC::Client.new("api.opensubtitles.org", "/xml-rpc", 80)
   login = server.call("LogIn", "", "", "en", XMLRPC::Client::USER_AGENT)
 
@@ -166,7 +177,7 @@ begin
     {
       "moviehash" => MovieHasher.compute_hash(path),
       "moviebytesize" => File.size(path),
-      "sublanguageid" => "eng",
+      "sublanguageid" => options.fetch(:lang),
     }
   end
 
