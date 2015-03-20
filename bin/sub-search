@@ -176,6 +176,8 @@ begin
     movies
   ).fetch("data")
 
+  exit if results == false
+
   ARGV.zip(movies) do |filename, query|
     filename = File.basename(filename).sub(/\.\w+$/, ".srt")
     result = results.find { |r| r["MovieHash"] == query["moviehash"] }
