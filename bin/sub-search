@@ -173,7 +173,10 @@ begin
   server = XMLRPC::Client.new("api.opensubtitles.org", "/xml-rpc", 80)
   login = server.call("LogIn", "", "", "en", XMLRPC::Client::USER_AGENT)
 
-  movies = ARGV.map do |path|
+  paths = ARGV
+  paths = $stdin.read.split("\n") if paths.empty?
+
+  movies = paths.map do |path|
     {
       "moviehash" => MovieHasher.compute_hash(path),
       "moviebytesize" => File.size(path),
@@ -189,10 +192,11 @@ begin
 
   exit if results == false
 
-  ARGV.zip(movies) do |filename, query|
+  paths.zip(movies) do |filename, query|
     filename = File.basename(filename).sub(/\.\w+$/, ".srt")
-    result = results.find { |r| r["MovieHash"] == query["moviehash"] }
-    puts "%s %s" % [result.fetch("SubDownloadLink"), filename]
+    if result = results.find { |r| r["MovieHash"] == query["moviehash"] }
+      puts "%s %s" % [result.fetch("SubDownloadLink"), filename]
+    end
   end
 rescue => err
   $stderr.puts err
