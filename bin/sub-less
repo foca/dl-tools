@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+require "pathname"
+
+dir = ARGV.first ||
+  Pathname(ENV["HOME"]).join("Downloads").
+  relative_path_from(Pathname.getwd)
+
+files = Dir[File.join(dir, "**/*.{mkv,mp4,avi}")]
+subs = Dir[File.join(dir, "**/*.srt")]
+
+files.each do |file|
+  next if File.file?(file + ".st") # ignore download state files from axel
+  puts file unless subs.include?(file.sub(/\.(mkv|mp4|avi)$/, '.srt'))
+end
