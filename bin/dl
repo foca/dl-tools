@@ -9,4 +9,5 @@ while read url name; do
   default_name="$(basename "$url" | cut -d? -f1)"
   name="${name:-$default_name}"
   (axel -q -o "$directory/$name" "$url") &
+  echo "$directory/$name"
 done

@@ -142,14 +142,14 @@ module MovieHasher
       size = io.size
       hash = size
 
-      io.read(CHUNK_SIZE).unpack("Q*").each do |n|
+      io.read(CHUNK_SIZE).to_s.unpack("Q*").each do |n|
         hash = hash + n & 0xffffffffffffffff
       end
 
       io.seek([0, size - CHUNK_SIZE].max, IO::SEEK_SET)
 
       # And again for the end of the file
-      io.read(CHUNK_SIZE).unpack("Q*").each do |n|
+      io.read(CHUNK_SIZE).to_s.unpack("Q*").each do |n|
         hash = hash + n & 0xffffffffffffffff
       end
 

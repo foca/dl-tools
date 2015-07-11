@@ -10,4 +10,5 @@ while read url name; do
   name="${name:-$default_name}"
   name="${name%.gz}"
   curl "$url" 2>/dev/null | gunzip > "$directory/$name"
+  echo "$directory/$name"
 done

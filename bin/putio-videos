@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+set -e
+[ -n "$DEBUG" ] && set -x
+
+root="$(echo "${1:-"$HOME/Downloads"}" | sed -e 's/\\//g')"
+token=$(sed -ne '/^machine api.put.io$/n;n;$p' "$HOME"/.netrc | awk '{print $2}')
+
+if [ -z "$token" ]; then
+  echo "Add your put.io OAuth token to the .netrc file"
+  exit 1
+fi
+
+videos=$(\
+  curl -sH 'Accept: application/json' "https://api.put.io/v2/files/search/type:video/page/-1?oauth_token=${token}" |\
+  jq --raw-output '.files[] | (.id | tostring) + " " + .name' \
+)
+
+echo "$videos" | while read id name; do
+  if [ -z "$(find "$root" -name "$name")" ]; then
+    base_url="https://api.put.io/v2/files/${id}/download?oauth_token=${token}"
+    url=$(curl -si "$base_url" | grep "Location:" | cut -d" " -f2- | tr "\r\n" "\0\0")
+    echo "${url} ${name}"
+  fi
+done
