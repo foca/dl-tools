@@ -9,6 +9,13 @@ while read url name; do
   default_name="$(basename "$url" | cut -d? -f1)"
   name="${name:-$default_name}"
   name="${name%.gz}"
-  curl "$url" 2>/dev/null | gunzip > "$directory/$name"
+
+  if [[ "$name" = /* ]]; then
+    path="$name";
+  else
+    path="$directory/$name";
+  fi
+
+  curl "$url" 2>/dev/null | gunzip > "$path"
   echo "$directory/$name"
 done

@@ -193,9 +193,10 @@ begin
   exit if results == false
 
   paths.zip(movies) do |filename, query|
+    dir = File.dirname(File.expand_path(filename))
     filename = File.basename(filename).sub(/\.\w+$/, ".srt")
     if result = results.find { |r| r["MovieHash"] == query["moviehash"] }
-      puts "%s %s" % [result.fetch("SubDownloadLink"), filename]
+      puts "%s %s" % [result.fetch("SubDownloadLink"), File.join(dir, filename)]
     end
   end
 rescue => err
