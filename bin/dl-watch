@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -e
+[ -n "$DEBUG" ] && set -x
+
+while read path; do
+  state="${path}.st"
+  (fswatch --one-event --event "Removed" "$state" &>/dev/null && osascript -e "display notification \"$path\" with title \"Download complete\"") &
+done
