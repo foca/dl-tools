@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+set -e
+[ -n "$DEBUG" ] && set -x
+
+fetch_title() {
+  curl "http://www.omdbapi.com/?i=tt$(printf "%07d" "$1")" 2>/dev/null | jq -r .Title
+}
+
+SOURCE="${1:-"$HOME/Downloads"}"
+DEST="${2:-"$HOME/Downloads/_Videos"}"
+find "${SOURCE%/}" -type f -name '*.mkv' -or -name '*.mp4'
+
+find "${SOURCE%/}" -type f -name '*.mkv' -or -name '*.mp4' | grep -v "$DEST" | \
+  sub-meta IDMovieImdb MovieKind SeriesIMDBParent SeriesSeason SeriesEpisode LocalPath | \
+  while read id type parent season episode path; do
+    filename="$(basename "$path")"
+
+    case "$type" in
+      movie)
+        directory="Movies/$(fetch_title "$id")"
+        ;;
+      episode)
+        directory="Series/$(fetch_title "$parent")/Season $season"
+        ;;
+      *)
+        unset directory
+    esac
+
+    mkdir -p "$DEST/$directory"
+    mv "$path" "$DEST/$directory/$filename"
+
+    subtitle="${path%.*}.srt"
+    [ -f "$subtitle" ] && mv "$subtitle" "$DEST/$directory"
+  done
