@@ -6,4 +6,5 @@ set -e
 while read path; do
   state="${path}.st"
   (fswatch --one-event --event "Removed" "$state" &>/dev/null && osascript -e "display notification \"$path\" with title \"Download complete\"") &
+  echo $path
 done
