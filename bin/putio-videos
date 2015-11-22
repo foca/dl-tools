@@ -16,8 +16,10 @@ videos=$(\
   jq --raw-output '.files[] | (.id | tostring) + " " + .name' \
 )
 
+quote() { echo $@ | sed -e 's/\(\[\|\]\|\.\|\*\)/\\\1/g'; }
+
 echo "$videos" | while read id name; do
-  if [ -z "$(find "$root" -name "$name")" ]; then
+  if [ -z "$(find "$root" -name "`quote $name`")" ]; then
     base_url="https://api.put.io/v2/files/${id}/download?oauth_token=${token}"
     url=$(curl -si "$base_url" | grep "Location:" | cut -d" " -f2- | tr "\r\n" "\0\0")
     echo "${url} ${name}"
