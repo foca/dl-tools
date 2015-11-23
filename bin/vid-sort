@@ -9,7 +9,6 @@ fetch_title() {
 
 SOURCE="${1:-"$HOME/Downloads"}"
 DEST="${2:-"$HOME/Downloads/_Videos"}"
-find "${SOURCE%/}" -type f -name '*.mkv' -or -name '*.mp4'
 
 find "${SOURCE%/}" -type f -name '*.mkv' -or -name '*.mp4' | grep -v "$DEST" | \
   sub-meta IDMovieImdb MovieKind SeriesIMDBParent SeriesSeason SeriesEpisode LocalPath | \
