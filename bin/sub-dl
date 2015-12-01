@@ -17,5 +17,5 @@ while read url name; do
   fi
 
   curl "$url" 2>/dev/null | gunzip > "$path"
-  echo "$directory/$name"
+  echo "$path"
 done
