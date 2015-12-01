@@ -26,9 +26,20 @@ $ sub-less | sub-search | sub-dl
 * `sub-less` will list any local video files that don't have a matching subtitle
   file (i.e. a file with the same name as the video but an `.srt` extension).
 * `sub-search` will search OpenSubtitles for subtitles to any videos passed to
-  it.
+  it. If you want to specify a different language for the subtitles, pass it in
+  the command line with the `--lang` argument. For example, for Spanish:
+
+  ``` sh
+  $ sub-less | sub-search --lang spa | sub-dl
+  ```
+
+  The language can be either a single or a comma separated list of [ISO 639-2][]
+  codes. If a list is passed, the first match in _any_ of the given languages
+  will be selected.
 * `sub-dl` will download the subtitles and place them next to the video file
   with the same name (but the `.srt` extension).
+
+[ISO 639-2]: https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes
 
 ### Sort videos into subdirectories
 
