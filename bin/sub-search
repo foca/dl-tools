@@ -3,13 +3,6 @@
 set -e
 [ -n "$DEBUG" ] && set -x
 
-expand_path() {
-  filename="$(basename $path)"
-  (cd "$(dirname $path)" &>/dev/null && echo "$PWD/$filename")
-}
-
-while read path; do
-  link="$(echo $path | sub-meta SubDownloadLink)"
-  path="$(expand_path "$path")"
-  [ -n "$link" ] && printf "%s %s\n" "$link" "${path%.*}.srt"
+sub-meta $@ SubDownloadLink LocalPath | while read link path; do
+  printf "%s %s\n" "$link" "${path%.*}.srt"
 done
