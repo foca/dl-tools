@@ -165,7 +165,7 @@ begin
 
   OptionParser.new do |opts|
     opts.banner = "Usage: #{File.basename($0)} [options] <video> <video> ..."
-    opts.on("-l", "--lang", "Choose language (Defaults to 'eng')") do |val|
+    opts.on("-l", "--lang LANGUAGE", "Choose language (Defaults to 'eng')") do |val|
       options[:lang] = val
     end
   end.parse!
