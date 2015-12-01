@@ -187,7 +187,7 @@ begin
     "SearchSubtitles",
     login.fetch("token"),
     queries
-  ).fetch("data")
+  ).fetch("data", false)
 
   exit if results == false
 
