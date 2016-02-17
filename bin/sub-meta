@@ -161,12 +161,15 @@ end
 require "optparse"
 
 begin
-  options = { lang: "eng" }
+  options = { lang: "eng", n: 1 }
 
   OptionParser.new do |opts|
     opts.banner = "Usage: #{File.basename($0)} [options] <video> <video> ..."
     opts.on("-l", "--lang LANGUAGE", "Choose language (Defaults to 'eng')") do |val|
       options[:lang] = val
+    end
+    opts.on("-n", "--num N", "Amount of subtitle links you want (Defaults to 1)") do |n|
+      options[:n] = Integer(n) rescue abort("--num N: n has to be a number")
     end
   end.parse!
 
@@ -192,7 +195,8 @@ begin
   exit if results == false
 
   queries.each.with_index do |query, idx|
-    if result = results.find { |r| r["MovieHash"] == query["moviehash"] }
+    results.select! { |r| r["MovieHash"] == query["moviehash"] }
+    results.take(options.fetch(:n)).each do |result|
       result["LocalPath"] = File.expand_path(paths.fetch(idx))
       if ARGV.any?
         puts result.values_at(*ARGV).join("\t")
