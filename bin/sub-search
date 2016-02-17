@@ -3,6 +3,6 @@
 set -e
 [ -n "$DEBUG" ] && set -x
 
-sub-meta $@ SubDownloadLink LocalPath | while read link path; do
-  printf "%s %s\n" "$link" "${path%.*}.srt"
+sub-meta $@ SubDownloadLink SubLanguageID LocalPath | while read link lang path; do
+  printf "%s %s\n" "$link" "${path%.*}.${lang}.srt"
 done
