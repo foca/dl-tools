@@ -29,7 +29,7 @@ find "${SOURCE%/}" -type f -name '*.mkv' -or -name '*.mp4' | grep -v "$DEST" | \
     mkdir -p "$DEST/$directory"
     mv "$path" "$DEST/$directory/$filename"
 
-    subtitle="${path%.*}.srt"
+    subtitle="${path%.*}{.*,}.srt"
     [ -f "$subtitle" ] && mv "$subtitle" "$DEST/$directory"
 
     echo "$DEST/$directory/$filename"

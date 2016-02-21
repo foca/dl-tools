@@ -11,5 +11,6 @@ subs = Dir[File.join(dir, "**/*.srt")]
 
 files.each do |file|
   next if File.file?(file + ".st") # ignore download state files from axel
-  puts file unless subs.include?(file.sub(/\.(mkv|mp4|avi)$/, '.srt'))
+  sub_name = /#{Regexp.escape(file.sub(/\.(mkv|mp4|avi)$/, ""))}(\.[a-z]{3})?\.srt$/
+  puts file unless subs.grep(sub_name).any?
 end
