@@ -194,9 +194,10 @@ begin
 
   exit if results == false
 
+  results = results.group_by { |result| result["MovieHash"] }
   queries.each.with_index do |query, idx|
-    results.select! { |r| r["MovieHash"] == query["moviehash"] }
-    results.take(options.fetch(:n)).each do |result|
+    query_results = results.fetch(query["moviehash"], [])
+    query_results.take(options.fetch(:n)).each do |result|
       result["LocalPath"] = File.expand_path(paths.fetch(idx))
       if ARGV.any?
         puts result.values_at(*ARGV).join("\t")
