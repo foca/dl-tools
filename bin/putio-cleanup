@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -e
+[ -n "$DEBUG" ] && set -x
+
+export PATH="$PATH:$(dirname $0)/../libexec"
+
+root="$(echo "${1:-"$HOME/Downloads"}" | sed -e 's/\\//g')"
+
+video_ids=$(
+  putio-raw-list | while read id name; do
+    # ignore files we haven't downloaded yet
+    if [ -z "$(quoted-find "$root" "$name")" ]; then
+      continue;
+    fi
+
+    # ignore files with an axel state file (i.e. currently downloading)
+    if [ -n "$(quoted-find "$root" "${name}.st")" ]; then
+      continue;
+    fi
+
+    echo $id;
+  done
+)
+
+if [ -n "$video_ids" ]; then
+  data="$(echo $video_ids | jq --compact-output --raw-output --raw-input '{ file_ids: . | split(" ") | join(",") }')"
+  curl -i -sH "Content-Type: application/json" -d "$data" "https://api.put.io/v2/files/delete?oauth_token=$(putio-token)"
+fi
