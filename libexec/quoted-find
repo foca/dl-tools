@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -e
+[ -n "$DEBUG" ] && set -x
+
+root="$(echo "${1:-"$HOME/Downloads"}" | sed -e 's/\\//g')"
+shift
+
+file="$(echo $@ | sed -e 's/\(\[\|\]\|\.\|\*\)/\\\1/g')"
+
+find "$root" -name "$file"

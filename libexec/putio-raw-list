@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -e
+[ -n "$DEBUG" ] && set -x
+
+export PATH="$PATH:$(dirname $0)/../libexec"
+
+curl -sH 'Accept: application/json' "https://api.put.io/v2/files/search/type:video/page/-1?oauth_token=$(putio-token)" |\
+  jq --raw-output '.files[] | (.id | tostring) + " " + .name'

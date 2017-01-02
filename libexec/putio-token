@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -e
+[ -n "$DEBUG" ] && set -x
+
+token=$(
+  sed -ne '/^machine api.put.io$/,/^\s\+password/p' "$HOME"/.netrc |\
+    sed -ne '$p' |\
+    awk '{print $2}'
+)
+
+if [ -z "$token" ]; then
+  echo "Add your put.io OAuth token to the .netrc file" >&2
+  exit 1
+fi
+
+echo $token

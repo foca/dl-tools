@@ -3,24 +3,13 @@
 set -e
 [ -n "$DEBUG" ] && set -x
 
+export PATH="$PATH:$(dirname $0)/../libexec"
+
 root="$(echo "${1:-"$HOME/Downloads"}" | sed -e 's/\\//g')"
-token=$(sed -ne '/^machine api.put.io$/,/^\s\+password/p' "$HOME"/.netrc | sed -ne '$p' | awk '{print $2}')
 
-if [ -z "$token" ]; then
-  echo "Add your put.io OAuth token to the .netrc file"
-  exit 1
-fi
-
-videos=$(\
-  curl -sH 'Accept: application/json' "https://api.put.io/v2/files/search/type:video/page/-1?oauth_token=${token}" |\
-  jq --raw-output '.files[] | (.id | tostring) + " " + .name' \
-)
-
-quote() { echo $@ | sed -e 's/\(\[\|\]\|\.\|\*\)/\\\1/g'; }
-
-echo "$videos" | while read id name; do
-  if [ -z "$(find "$root" -name "`quote $name`")" ]; then
-    base_url="https://api.put.io/v2/files/${id}/download?oauth_token=${token}"
+putio-raw-list | while read id name; do
+  if [ -z "$(quoted-find "$root" "$name")" ]; then
+    base_url="https://api.put.io/v2/files/${id}/download?oauth_token=$(putio-token)"
     url=$(curl -si "$base_url" | grep "Location:" | cut -d" " -f2- | tr "\r\n" "\0\0")
     echo "${url} ${name}"
   fi
