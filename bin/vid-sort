@@ -3,6 +3,8 @@
 set -e
 [ -n "$DEBUG" ] && set -x
 
+export PATH="$PATH:$(dirname $0)/../libexec"
+
 fetch_title() {
   curl "http://www.omdbapi.com/?i=tt$(printf "%07d" "$1")" 2>/dev/null | jq -r .Title
 }
